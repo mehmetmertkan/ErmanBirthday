@@ -82,6 +82,22 @@ tr:last-child td{border-bottom:none}
 .player-info{gap:12px;font-size:19px}
 .save-button{width:68%;min-width:175px}
 }
+.meal-button{display:block;width:62%;max-width:260px;min-width:190px;margin:12px auto 0;padding:12px 16px;font-size:16px;color:#fff;background:linear-gradient(135deg,#2a7812,#2a7812);box-shadow:0 5px 15px rgba(233,30,99,.2);border:none;border-radius:12px;cursor:pointer;font-weight:800;touch-action:manipulation;transition:transform .08s,filter .15s}
+.meal-button:active{transform:scale(.97)}
+.meal-button:hover{filter:brightness(1.12)}
+.meal-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:1000;display:flex;align-items:center;justify-content:center}
+.meal-content{background:rgba(17,27,43,.98);border:2px solid #2a7812;border-radius:20px;padding:30px;max-width:90%;width:350px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.meal-content h3{margin:0 0 20px;color:#2a7812;font-size:22px}
+.meal-info{background:#0b1220;border:1px solid #263750;border-radius:12px;padding:20px;margin:15px 0;text-align:left}
+.meal-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #263750}
+.meal-row:last-child{border-bottom:none}
+.meal-label{color:#91a4bd;font-size:14px;font-weight:800}
+.meal-value{color:#f5f7fa;font-size:16px;font-weight:800;word-break:break-all}
+.iban-value{font-family:monospace;letter-spacing:1px;color:#f5f7fa}
+.meal-copy-btn,.meal-close-btn{width:100%;padding:12px;margin:8px 0;font-size:16px;font-weight:800;color:#fff;border:none;border-radius:12px;cursor:pointer;transition:filter .15s}
+.meal-copy-btn{background:linear-gradient(135deg,#2196f3,#1565c0);box-shadow:0 5px 15px rgba(33,150,243,.2)}
+.meal-close-btn{background:linear-gradient(135deg,#757575,#616161);box-shadow:0 5px 15px rgba(117,117,117,.2)}
+.meal-copy-btn:hover,.meal-close-btn:hover{filter:brightness(1.1)}
 @media(max-width:380px){
 .cake-progress{width:225px;height:225px}
 .cake-progress::before{width:160px;height:160px}
@@ -120,7 +136,9 @@ tr:last-child td{border-bottom:none}
 <span>Oyuncu Skoru: <span id="score" class="player-score">0</span></span>
 </div>
 
-<button id="saveButton" class="save-button" onclick="manualSave()">💾 SKORU KAYDET</button>
+<button id="saveButton" class="save-button" onclick="manualSave()">💾 Skoru Kaydet</button>
+
+<button id="mealButton" class="meal-button" onclick="showMealModal()">🍽️ Erman'a Yemek Ismarla</button>
 
 </div>
 
@@ -136,6 +154,28 @@ tr:last-child td{border-bottom:none}
 <span>Bitir</span>
 </div>
 <button id="captchaSubmit" class="captcha-submit" disabled onclick="verifyCaptcha()">Doğrula</button>
+</div>
+</div>
+
+<div id="mealModal" class="meal-modal" style="display:none;">
+<div class="meal-content">
+<h3>🍽️ Erman'a Yemek Ismarla</h3>
+<div class="meal-info">
+<div class="meal-row">
+<span class="meal-label">Yemek ücreti:</span>
+<span class="meal-value">800 ₺</span>
+</div>
+<div class="meal-row">
+<span class="meal-label">İsim:</span>
+<span class="meal-value">Erman KAN</span>
+</div>
+<div class="meal-row">
+<span class="meal-label">IBAN:</span>
+<span class="meal-value iban-value">TR18 0001 0027 2090 3867 0050 01</span>
+</div>
+</div>
+<button class="meal-copy-btn" onclick="copyIban()">📋 IBAN Kopyala</button>
+<button class="meal-close-btn" onclick="hideMealModal()">Kapat</button>
 </div>
 </div>
 
@@ -168,7 +208,7 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <div class="footer">
-<h3>💣 Bu site Mert Yaz. İnş. Taah. Yapı Gm. Harf. Mim. Müh. Prj. Dan. Enj. Otm. Loj. Tek. Ltd. Şti. tarafından yapılmıştır. Hiçbir hakkı saklı değildir. 💣</h3>
+<h3>Bu site Mert Yaz. İnş. Taah. Yapı Gm. Harf. Mim. Müh. Prj. Dan. Enj. Otm. Loj. Tek. Ltd. Şti. tarafından yapılmıştır. Hiçbir hakkı saklı değildir.</h3>
 </div>
 
 </div>
@@ -839,6 +879,24 @@ function verifyCaptcha(){
 if(captchaSolved){
 hideCaptcha();
 }
+}
+
+function showMealModal(){
+document.getElementById("mealModal").style.display="flex";
+}
+
+function hideMealModal(){
+document.getElementById("mealModal").style.display="none";
+}
+
+function copyIban(){
+const iban="TR18 0001 0027 2090 3867 0050 01";
+navigator.clipboard.writeText(iban).then(()=>{
+const btn=document.querySelector(".meal-copy-btn");
+const original=btn.textContent;
+btn.textContent="✅ Kopyalandı!";
+setTimeout(()=>{btn.textContent=original;},1500);
+});
 }
 
 async function loadInitialLeaderboard(){
