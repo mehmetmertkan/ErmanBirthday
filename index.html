@@ -94,7 +94,7 @@ tr:last-child td{border-bottom:none}
 <body>
 
 <header class="birthday-header">
-<h1>🎉 İYİ Kİ DOĞDUN ERMAN 🎉</h1>
+<h1 id="headerMessage">🎉 İYİ Kİ DOĞDUN ERMAN 🎉</h1>
 </header>
 
 <div class="container">
@@ -168,7 +168,7 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <div class="footer">
-<h3>🎂 Erman'ın doğum gününü kutlamak için Mert tarafından hazırlandı 🎂</h3>
+<h3>💣 Bu site Mert Yaz. İnş. Taah. Yapı Gm. Harf. Mim. Müh. Prj. Dan. Enj. Otm. Loj. Tek. Ltd. Şti. tarafından yapılmıştır. Hiçbir hakkı saklı değildir. 💣</h3>
 </div>
 
 </div>
@@ -177,6 +177,24 @@ tr:last-child td{border-bottom:none}
 const API_KEY="140a7865-e4b3-45ba-9f3f-1eaf2d152767";
 const LEADERBOARD_ID="c181779f-b335-463f-7004-08defc722cf6";
 const API_URL="https://api.simpleboards.dev";
+
+const BIRTHDAY_TARGET=new Date("2026-08-19T23:59:59+03:00");
+const headerEl=document.getElementById("headerMessage");
+function updateCountdown(){
+const now=new Date();
+const diff=BIRTHDAY_TARGET-now;
+if(diff<=0){
+headerEl.textContent="🎉 İYİ Kİ DOĞDUN ERMAN 🎉";
+return;
+}
+const d=Math.floor(diff/86400000);
+const h=Math.floor((diff%86400000)/3600000);
+const m=Math.floor((diff%3600000)/60000);
+const s=Math.floor((diff%60000)/1000);
+headerEl.textContent=`💣 Erman'ın doğum gününe ${d} gün ${h} saat ${m} dakika ${s} saniye kaldı 💣`;
+}
+updateCountdown();
+setInterval(updateCountdown,1000);
 
 let playerName="";
 let score=0;
