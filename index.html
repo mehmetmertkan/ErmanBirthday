@@ -60,10 +60,10 @@ tr:last-child td{border-bottom:none}
 .captcha-content{background:rgba(17,27,43,.98);border:2px solid #2196f3;border-radius:20px;padding:30px;max-width:90%;width:350px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .captcha-content h3{margin:0 0 10px;color:#2196f3;font-size:22px}
 .captcha-content p{margin:0 0 20px;color:#dce4ee;font-size:16px}
-.slider-track{position:relative;width:100%;height:50px;background:#0b1220;border:2px solid #263750;border-radius:25px;margin:15px 0;overflow:hidden}
-.slider-thumb{position:absolute;top:50%;left:4px;transform:translateY(-50%);width:42px;height:42px;background:linear-gradient(135deg,#2196f3,#1565c0);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:grab;touch-action:none;transition:left .1s;box-shadow:0 4px 12px rgba(33,150,243,.4);z-index:2;user-select:none}
-.slider-thumb:active{cursor:grabbing;transform:translateY(-50%) scale(1.1)}
-.slider-thumb.solved{background:linear-gradient(135deg,#4caf50,#2e7d32);box-shadow:0 4px 12px rgba(76,175,80,.4);cursor:default}
+.slider-track{position:relative;width:100%;height:56px;background:#0b1220;border:2px solid #263750;border-radius:28px;margin:15px 0;overflow:hidden;touch-action:none}
+.slider-thumb{position:absolute;top:50%;left:4px;transform:translateY(-50%);width:48px;height:48px;background:linear-gradient(135deg,#2196f3,#1565c0);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:grab;touch-action:none;will-change:transform;z-index:2;user-select:none}
+.slider-thumb.dragging{cursor:grabbing;transform:translateY(-50%) scale(1.1)}
+.slider-thumb.solved{background:linear-gradient(135deg,#4caf50,#2e7d32);cursor:default}
 .slider-labels{display:flex;justify-content:space-between;color:#70839c;font-size:13px;margin-bottom:15px}
 .captcha-submit{width:100%;padding:14px;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,#4caf50,#2e7d32);border:none;border-radius:12px;cursor:pointer;opacity:.5;transition:opacity .2s}
 .captcha-submit:not(:disabled){opacity:1}
@@ -146,8 +146,8 @@ tr:last-child td{border-bottom:none}
 <div class="captcha-content">
 <h3>🔒 Güvenlik Doğrulaması</h3>
 <p>Lütfen kaydırıcıyı sağa sürükleyin</p>
-<div class="slider-track">
-<div id="sliderThumb" class="slider-thumb" ontouchstart="captchaTouchStart(event)" ontouchmove="captchaTouchMove(event)" ontouchend="captchaTouchEnd()" onmousedown="captchaMouseDown(event)">👉</div>
+<div class="slider-track" id="sliderTrack">
+<div id="sliderThumb" class="slider-thumb" onmousedown="captchaMouseDown(event)" ontouchstart="captchaTouchStart(event)" ontouchmove="captchaTouchMove(event)" ontouchend="captchaTouchEnd()">👉</div>
 </div>
 <div class="slider-labels">
 <span>Başla</span>
@@ -240,12 +240,12 @@ let playerName="";
 let score=0;
 let lastSavedScore=0;
 let leaderboardEntries=[];
-const CAKE_GOAL=10000;
+const CAKE_GOAL=25000;
 let totalClicks=0;
 let cakeCompleted=false;
 
 let lastClickTime=0;
-const MIN_CLICK_INTERVAL=120;
+const MIN_CLICK_INTERVAL=143;
 let clicksSinceCaptcha=0;
 let captchaActive=false;
 let captchaSolved=false;
@@ -333,7 +333,11 @@ if(score>0&&score%50===0){
 saveScore(null,true);
 }
 
-if(clicksSinceCaptcha>=100){
+if(score>0&&score%100===0){
+miniCelebrate();
+}
+
+if(score>0&&score%86===0){
 showCaptcha();
 }
 
@@ -795,18 +799,65 @@ confetti.remove();
 
 }
 
+function miniCelebrate(){
+
+const colors=[
+"#ffc107",
+"#ffca28",
+"#fff9c4",
+"#ffeb3b",
+"#fff176"
+];
+
+for(let i=0;i<100;i++){
+
+const confetti=
+document.createElement("div");
+
+confetti.className="confetti";
+
+confetti.style.left=
+Math.random()*100+"vw";
+
+confetti.style.background=
+colors[
+Math.floor(
+Math.random()*colors.length
+)
+];
+
+confetti.style.animationDuration=
+(1+Math.random()*1.5)+"s";
+
+document.body.appendChild(
+confetti
+);
+
+setTimeout(
+()=>{
+confetti.remove();
+},
+3000
+);
+
+}
+
+}
+
 let captchaDragging=false;
 let captchaStartX=0;
 let captchaThumbX=0;
 const captchaMaxX=260;
+const sliderTrack=document.getElementById("sliderTrack");
+const sliderThumb=document.getElementById("sliderThumb");
 
 function showCaptcha(){
 captchaActive=true;
 captchaSolved=false;
 clicksSinceCaptcha=0;
 document.getElementById("captchaModal").style.display="flex";
-document.getElementById("sliderThumb").style.left="4px";
-document.getElementById("sliderThumb").classList.remove("solved");
+sliderThumb.style.transform="translateY(-50%) translateX(0px)";
+sliderThumb.classList.remove("solved","dragging");
 document.getElementById("captchaSubmit").disabled=true;
 }
 
@@ -818,8 +869,9 @@ captchaActive=false;
 function captchaMouseDown(e){
 captchaDragging=true;
 captchaStartX=e.clientX;
-captchaThumbX=parseInt(document.getElementById("sliderThumb").style.left)||4;
-document.getElementById("sliderThumb").style.cursor="grabbing";
+const transform=sliderThumb.style.transform;
+captchaThumbX=transform?parseFloat(transform.match(/translateX\(([\d.-]+)px\)/)?.[1])||0:0;
+sliderThumb.classList.add("dragging");
 document.addEventListener("mousemove",captchaMouseMove);
 document.addEventListener("mouseup",captchaMouseUp);
 e.preventDefault();
@@ -830,14 +882,14 @@ if(!captchaDragging)return;
 const dx=e.clientX-captchaStartX;
 let newX=captchaThumbX+dx;
 newX=Math.max(4,Math.min(captchaMaxX,newX));
-document.getElementById("sliderThumb").style.left=newX+"px";
+sliderThumb.style.transform=`translateY(-50%) translateX(${newX-4}px)`;
 checkCaptchaComplete(newX);
 }
 
 function captchaMouseUp(){
 if(!captchaDragging)return;
 captchaDragging=false;
-document.getElementById("sliderThumb").style.cursor="grab";
+sliderThumb.classList.remove("dragging");
 document.removeEventListener("mousemove",captchaMouseMove);
 document.removeEventListener("mouseup",captchaMouseUp);
 }
@@ -845,7 +897,9 @@ document.removeEventListener("mouseup",captchaMouseUp);
 function captchaTouchStart(e){
 captchaDragging=true;
 captchaStartX=e.touches[0].clientX;
-captchaThumbX=parseInt(document.getElementById("sliderThumb").style.left)||4;
+const transform=sliderThumb.style.transform;
+captchaThumbX=transform?parseFloat(transform.match(/translateX\(([\d.-]+)px\)/)?.[1])||0:0;
+sliderThumb.classList.add("dragging");
 e.preventDefault();
 }
 
@@ -854,22 +908,23 @@ if(!captchaDragging)return;
 const dx=e.touches[0].clientX-captchaStartX;
 let newX=captchaThumbX+dx;
 newX=Math.max(4,Math.min(captchaMaxX,newX));
-document.getElementById("sliderThumb").style.left=newX+"px";
+sliderThumb.style.transform=`translateY(-50%) translateX(${newX-4}px)`;
 checkCaptchaComplete(newX);
 }
 
 function captchaTouchEnd(){
 if(!captchaDragging)return;
 captchaDragging=false;
+sliderThumb.classList.remove("dragging");
 }
 
 function checkCaptchaComplete(x){
-if(x>=captchaMaxX-10){
-document.getElementById("sliderThumb").classList.add("solved");
+if(x>=captchaMaxX-14){
+sliderThumb.classList.add("solved");
 document.getElementById("captchaSubmit").disabled=false;
 captchaSolved=true;
 }else{
-document.getElementById("sliderThumb").classList.remove("solved");
+sliderThumb.classList.remove("solved");
 document.getElementById("captchaSubmit").disabled=true;
 captchaSolved=false;
 }
