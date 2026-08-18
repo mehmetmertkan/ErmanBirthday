@@ -55,6 +55,21 @@ tr:last-child td{border-bottom:none}
 .footer{text-align:center;color:#596b83;font-size:13px;padding:5px 10px}
 .confetti{position:fixed;width:9px;height:14px;top:-20px;z-index:100;pointer-events:none;animation:fall 2s linear forwards}
 @keyframes fall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+.captcha-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:1000;display:flex;align-items:center;justify-content:center}
+.captcha-content{background:rgba(17,27,43,.98);border:2px solid #2196f3;border-radius:20px;padding:30px;max-width:90%;width:350px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.captcha-content h3{margin:0 0 10px;color:#2196f3;font-size:22px}
+.captcha-content p{margin:0 0 20px;color:#dce4ee;font-size:16px}
+.slider-track{position:relative;width:100%;height:50px;background:#0b1220;border:2px solid #263750;border-radius:25px;margin:15px 0;overflow:hidden}
+.slider-thumb{position:absolute;top:50%;left:4px;transform:translateY(-50%);width:42px;height:42px;background:linear-gradient(135deg,#2196f3,#1565c0);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:grab;touch-action:none;transition:left .1s;box-shadow:0 4px 12px rgba(33,150,243,.4);z-index:2;user-select:none}
+.slider-thumb:active{cursor:grabbing;transform:translateY(-50%) scale(1.1)}
+.slider-thumb.solved{background:linear-gradient(135deg,#4caf50,#2e7d32);box-shadow:0 4px 12px rgba(76,175,80,.4);cursor:default}
+.slider-labels{display:flex;justify-content:space-between;color:#70839c;font-size:13px;margin-bottom:15px}
+.captcha-submit{width:100%;padding:14px;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,#4caf50,#2e7d32);border:none;border-radius:12px;cursor:pointer;opacity:.5;transition:opacity .2s}
+.captcha-submit:not(:disabled){opacity:1}
+.captcha-submit:not(:disabled):hover{filter:brightness(1.1)}
+.captcha-submit:disabled{cursor:not-allowed}
+
 @media(max-width:600px){
 .container{padding:12px 10px 35px}
 .birthday-header h1{font-size:21px}
@@ -86,7 +101,7 @@ tr:last-child td{border-bottom:none}
 
 <div id="nameArea" class="card">
 <h2>🏁 İsmini Gir</h2>
-<input id="nameInput" type="text" maxlength="30" placeholder="İsmin" autocomplete="off">
+<input id="nameInput" type="text" maxlength="30" placeholder="İsmin" autocomplete="off" value="m">
 <button id="startButton" onclick="startGame()">OYUNA BAŞLA</button>
 </div>
 
@@ -95,7 +110,7 @@ tr:last-child td{border-bottom:none}
 <div class="cake-progress-card">
 <div id="totalClicks" class="total-clicks">0 / 25.000</div>
 <div id="readyText" class="ready-text">🎉 PASTA HAZIR! 🎉</div>
-<div id="cakeProgress" class="cake-progress" onclick="clickGame()">
+<div id="cakeProgress" class="cake-progress" onclick="clickGame(event)">
 <div id="cakeFill" class="cake-fill">🎂</div>
 </div>
 </div>
@@ -107,6 +122,21 @@ tr:last-child td{border-bottom:none}
 
 <button id="saveButton" class="save-button" onclick="manualSave()">💾 SKORU KAYDET</button>
 
+</div>
+
+<div id="captchaModal" class="captcha-modal" style="display:none;">
+<div class="captcha-content">
+<h3>🔒 Güvenlik Doğrulaması</h3>
+<p>Lütfen kaydırıcıyı sağa sürükleyin</p>
+<div class="slider-track">
+<div id="sliderThumb" class="slider-thumb" ontouchstart="captchaTouchStart(event)" ontouchmove="captchaTouchMove(event)" ontouchend="captchaTouchEnd()" onmousedown="captchaMouseDown(event)">👉</div>
+</div>
+<div class="slider-labels">
+<span>Başla</span>
+<span>Bitir</span>
+</div>
+<button id="captchaSubmit" class="captcha-submit" disabled onclick="verifyCaptcha()">Doğrula</button>
+</div>
 </div>
 
 <div class="card">
@@ -155,6 +185,12 @@ let leaderboardEntries=[];
 const CAKE_GOAL=10000;
 let totalClicks=0;
 let cakeCompleted=false;
+
+let lastClickTime=0;
+const MIN_CLICK_INTERVAL=120;
+let clicksSinceCaptcha=0;
+let captchaActive=false;
+let captchaSolved=false;
 
 async function startGame(){
 
@@ -210,11 +246,20 @@ resetSaveButton();
 
 }
 
-function clickGame(){
+function clickGame(e){
 
 if(!playerName)return;
 
+if(captchaActive)return;
+
+const now=Date.now();
+if(now-lastClickTime<MIN_CLICK_INTERVAL){
+return;
+}
+lastClickTime=now;
+
 score++;
+clicksSinceCaptcha++;
 
 updateScore();
 updateLocalLeaderboard();
@@ -228,6 +273,10 @@ celebrate();
 
 if(score>0&&score%50===0){
 saveScore(null,true);
+}
+
+if(clicksSinceCaptcha>=100){
+showCaptcha();
 }
 
 }
@@ -686,6 +735,92 @@ confetti.remove();
 
 }
 
+}
+
+let captchaDragging=false;
+let captchaStartX=0;
+let captchaThumbX=0;
+const captchaMaxX=260;
+
+function showCaptcha(){
+captchaActive=true;
+captchaSolved=false;
+clicksSinceCaptcha=0;
+document.getElementById("captchaModal").style.display="flex";
+document.getElementById("sliderThumb").style.left="4px";
+document.getElementById("sliderThumb").classList.remove("solved");
+document.getElementById("captchaSubmit").disabled=true;
+}
+
+function hideCaptcha(){
+document.getElementById("captchaModal").style.display="none";
+captchaActive=false;
+}
+
+function captchaMouseDown(e){
+captchaDragging=true;
+captchaStartX=e.clientX;
+captchaThumbX=parseInt(document.getElementById("sliderThumb").style.left)||4;
+document.getElementById("sliderThumb").style.cursor="grabbing";
+document.addEventListener("mousemove",captchaMouseMove);
+document.addEventListener("mouseup",captchaMouseUp);
+e.preventDefault();
+}
+
+function captchaMouseMove(e){
+if(!captchaDragging)return;
+const dx=e.clientX-captchaStartX;
+let newX=captchaThumbX+dx;
+newX=Math.max(4,Math.min(captchaMaxX,newX));
+document.getElementById("sliderThumb").style.left=newX+"px";
+checkCaptchaComplete(newX);
+}
+
+function captchaMouseUp(){
+if(!captchaDragging)return;
+captchaDragging=false;
+document.getElementById("sliderThumb").style.cursor="grab";
+document.removeEventListener("mousemove",captchaMouseMove);
+document.removeEventListener("mouseup",captchaMouseUp);
+}
+
+function captchaTouchStart(e){
+captchaDragging=true;
+captchaStartX=e.touches[0].clientX;
+captchaThumbX=parseInt(document.getElementById("sliderThumb").style.left)||4;
+e.preventDefault();
+}
+
+function captchaTouchMove(e){
+if(!captchaDragging)return;
+const dx=e.touches[0].clientX-captchaStartX;
+let newX=captchaThumbX+dx;
+newX=Math.max(4,Math.min(captchaMaxX,newX));
+document.getElementById("sliderThumb").style.left=newX+"px";
+checkCaptchaComplete(newX);
+}
+
+function captchaTouchEnd(){
+if(!captchaDragging)return;
+captchaDragging=false;
+}
+
+function checkCaptchaComplete(x){
+if(x>=captchaMaxX-10){
+document.getElementById("sliderThumb").classList.add("solved");
+document.getElementById("captchaSubmit").disabled=false;
+captchaSolved=true;
+}else{
+document.getElementById("sliderThumb").classList.remove("solved");
+document.getElementById("captchaSubmit").disabled=true;
+captchaSolved=false;
+}
+}
+
+function verifyCaptcha(){
+if(captchaSolved){
+hideCaptcha();
+}
 }
 
 async function loadInitialLeaderboard(){
