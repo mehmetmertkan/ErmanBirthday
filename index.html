@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#0b1220">
+<title>🎂 Erman's Birthday 🎉</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at top,#17243a 0%,#0b1220 45%,#050912 100%);color:#f5f7fa;overscroll-behavior:none}
+body{min-height:100vh}
+body::before{content:"";position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;background:linear-gradient(135deg,rgba(30,136,229,.05),transparent 40%,rgba(255,152,0,.04));z-index:0}
+.birthday-header{position:sticky;top:0;z-index:50;width:100%;text-align:center;padding:12px 10px;background:rgba(8,15,27,.94);border-bottom:1px solid rgba(38,55,80,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 5px 20px rgba(0,0,0,.25)}
+.birthday-header h1{margin:2px 0;font-size:clamp(20px,5vw,34px);font-weight:900;letter-spacing:-.5px;color:#fff;text-shadow:0 0 18px rgba(30,136,229,.35)}
+.container{position:relative;z-index:1;width:100%;max-width:720px;margin:auto;padding:18px 16px 50px}
+.card{background:rgba(17,27,43,.94);border:1px solid #263750;border-radius:18px;padding:24px;margin-bottom:20px;box-shadow:0 15px 40px rgba(0,0,0,.35)}
+#nameArea{text-align:center}
+.card h2{margin-top:0;color:#fff}
+input{width:100%;padding:15px;font-size:18px;color:#fff;background:#0b1220;border:2px solid #263750;border-radius:10px;outline:none;margin-bottom:14px}
+input:focus{border-color:#2196f3;box-shadow:0 0 0 3px rgba(33,150,243,.15)}
+button{border:none;border-radius:12px;cursor:pointer;font-weight:800;touch-action:manipulation;transition:transform .08s,filter .15s}
+button:active{transform:scale(.97)}
+#startButton{width:100%;padding:15px;font-size:18px;color:#fff;background:linear-gradient(135deg,#1565c0,#2196f3);box-shadow:0 6px 18px rgba(33,150,243,.25)}
+#startButton:hover{filter:brightness(1.12)}
+#gameArea{display:none;text-align:center;padding:10px 18px 18px}
+.cake-progress-card{text-align:center;padding:8px 0 12px;margin-bottom:12px}
+.total-clicks{margin:0 0 10px;color:#ffc107;font-size:clamp(34px,9vw,42px);font-weight:900;text-shadow:0 0 20px rgba(255,193,7,.25);line-height:1}
+.ready-text{height:32px;margin:0 0 8px;color:#ffc107;font-size:23px;font-weight:900;text-shadow:0 0 15px rgba(255,193,7,.45);opacity:0;transform:scale(.8);transition:opacity .3s ease,transform .3s ease}
+.ready-text.show{opacity:1;transform:scale(1)}
+.cake-progress{position:relative;width:280px;height:280px;margin:0 auto;border-radius:50%;background:conic-gradient(#ffc107 0deg,#ffc107 0deg,#263750 0deg,#263750 360deg);display:flex;align-items:center;justify-content:center;box-shadow:0 0 35px rgba(255,193,7,.15);transition:background .25s ease,box-shadow .25s ease;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.cake-progress::before{content:"";position:absolute;width:200px;height:200px;border-radius:50%;background:#111b2b;box-shadow:inset 0 0 25px rgba(0,0,0,.3)}
+.cake-fill{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;width:150px;height:150px;font-size:110px;line-height:1;transform:scale(1);transform-origin:center center;filter:drop-shadow(0 7px 10px rgba(0,0,0,.3));pointer-events:none}
+.cake-fill.animate{animation:cakeClick .28s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes cakeClick{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
+.cake-progress.ready{box-shadow:0 0 30px rgba(255,193,7,.55),0 0 70px rgba(255,152,0,.3)}
+.cake-progress.ready .cake-fill{filter:drop-shadow(0 8px 15px rgba(255,193,7,.4))}
+.player-info{display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap;margin:0 0 10px;color:#dce4ee;font-size:21px;font-weight:800}
+.player-info .player-name,.player-info .player-score{color:#42a5f5;font-weight:900}
+.save-button{display:block;width:62%;max-width:260px;min-width:190px;margin:0 auto;padding:12px 16px;font-size:16px;color:#fff;background:linear-gradient(135deg,#e67e22,#d35400);box-shadow:0 5px 15px rgba(230,126,34,.2)}
+.save-button.saved{background:linear-gradient(135deg,#2e7d32,#43a047);box-shadow:0 5px 15px rgba(67,160,71,.25)}
+.save-button:hover{filter:brightness(1.1)}
+.leaderboard-title{text-align:center;color:#fff!important;font-size:25px}
+.table-wrapper{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{padding:12px 8px;color:#6faee8;background:#0c1626;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:14px 8px;text-align:center;border-bottom:1px solid #263750;color:#dce4ee}
+tr:last-child td{border-bottom:none}
+.gold{color:#ffc107;font-size:21px}
+.silver{color:#c7d0db;font-size:21px}
+.bronze{color:#cd7f32;font-size:21px}
+.loading{color:#70839c}
+.global-total{margin-top:18px;padding-top:18px;border-top:1px solid #263750;text-align:center}
+.global-total-label{display:block;color:#91a4bd;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.global-total-value{display:block;color:#ffc107;font-size:30px;font-weight:900;text-shadow:0 0 15px rgba(255,193,7,.2)}
+.footer{text-align:center;color:#596b83;font-size:13px;padding:5px 10px}
+.confetti{position:fixed;width:9px;height:14px;top:-20px;z-index:100;pointer-events:none;animation:fall 2s linear forwards}
+@keyframes fall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+@media(max-width:600px){
+.container{padding:12px 10px 35px}
+.birthday-header h1{font-size:21px}
+.cake-progress-card{padding:6px 0 10px}
+.cake-progress{width:250px;height:250px}
+.cake-progress::before{width:178px;height:178px}
+.cake-fill{width:135px;height:135px;font-size:98px}
+.total-clicks{font-size:38px}
+.ready-text{font-size:21px}
+.player-info{gap:12px;font-size:19px}
+.save-button{width:68%;min-width:175px}
+}
+@media(max-width:380px){
+.cake-progress{width:225px;height:225px}
+.cake-progress::before{width:160px;height:160px}
+.cake-fill{width:120px;height:120px;font-size:88px}
+.player-info{font-size:17px;gap:8px}
+.save-button{width:72%;min-width:165px;font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<header class="birthday-header">
+<h1>🎉 İYİ Kİ DOĞDUN ERMAN 🎉</h1>
+</header>
+
+<div class="container">
+
+<div id="nameArea" class="card">
+<h2>🏁 İsmini Gir</h2>
+<input id="nameInput" type="text" maxlength="30" placeholder="İsmin" autocomplete="off">
+<button id="startButton" onclick="startGame()">OYUNA BAŞLA</button>
+</div>
+
+<div id="gameArea" class="card">
+
+<div class="cake-progress-card">
+<div id="totalClicks" class="total-clicks">0 / 25.000</div>
+<div id="readyText" class="ready-text">🎉 PASTA HAZIR! 🎉</div>
+<div id="cakeProgress" class="cake-progress" onclick="clickGame()">
+<div id="cakeFill" class="cake-fill">🎂</div>
+</div>
+</div>
+
+<div class="player-info">
+<span>Oyuncu: <span id="playerName" class="player-name"></span></span>
+<span>Oyuncu Skoru: <span id="score" class="player-score">0</span></span>
+</div>
+
+<button id="saveButton" class="save-button" onclick="manualSave()">💾 SKORU KAYDET</button>
+
+</div>
+
+<div class="card">
+
+<h2 class="leaderboard-title">🏆 GLOBAL LİDER TABLOSU</h2>
+
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th>Sıra</th>
+<th>Oyuncu</th>
+<th>Skor</th>
+</tr>
+</thead>
+<tbody id="leaderboard">
+<tr>
+<td colspan="3" class="loading">Skorlar yükleniyor...</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="global-total">
+<span class="global-total-label">TOPLAM TIKLAMA</span>
+<span id="globalTotalClicks" class="global-total-value">0</span>
+</div>
+
+</div>
+
+<div class="footer">
+<h3>🎂 Erman'ın doğum gününü kutlamak için Mert tarafından hazırlandı 🎂</h3>
+</div>
+
+</div>
+
+<script>
+const API_KEY="140a7865-e4b3-45ba-9f3f-1eaf2d152767";
+const LEADERBOARD_ID="c181779f-b335-463f-7004-08defc722cf6";
+const API_URL="https://api.simpleboards.dev";
+
+let playerName="";
+let score=0;
+let lastSavedScore=0;
+let leaderboardEntries=[];
+const CAKE_GOAL=10000;
+let totalClicks=0;
+let cakeCompleted=false;
+
+async function startGame(){
+
+const input=document.getElementById("nameInput");
+playerName=input.value.trim();
+
+if(playerName===""){
+alert("Lütfen ismini gir!");
+return;
+}
+
+document.getElementById("nameArea").style.display="none";
+document.getElementById("gameArea").style.display="block";
+document.getElementById("playerName").textContent=playerName;
+
+const entries=await getLeaderboard();
+
+leaderboardEntries=entries.map(entry=>({
+...entry,
+score:Number(entry.score||0)
+}));
+
+let player=leaderboardEntries.find(
+entry=>
+entry.playerId===playerName||
+entry.playerDisplayName===playerName
+);
+
+if(player){
+
+score=Number(player.score);
+lastSavedScore=score;
+player.score=score;
+
+}else{
+
+score=0;
+lastSavedScore=0;
+
+leaderboardEntries.push({
+playerId:playerName,
+playerDisplayName:playerName,
+score:0
+});
+
+}
+
+sortLeaderboard();
+updateScore();
+updateCakeProgressFromLeaderboard();
+displayLeaderboard(leaderboardEntries);
+resetSaveButton();
+
+}
+
+function clickGame(){
+
+if(!playerName)return;
+
+score++;
+
+updateScore();
+updateLocalLeaderboard();
+updateCakeDisplay();
+animateCake();
+resetSaveButton();
+
+if(totalClicks>=CAKE_GOAL){
+celebrate();
+}
+
+if(score>0&&score%50===0){
+saveScore(null,true);
+}
+
+}
+
+function updateLocalLeaderboard(){
+
+let player=leaderboardEntries.find(
+entry=>
+entry.playerId===playerName||
+entry.playerDisplayName===playerName
+);
+
+if(player){
+
+player.score=score;
+
+}else{
+
+player={
+playerId:playerName,
+playerDisplayName:playerName,
+score:score
+};
+
+leaderboardEntries.push(player);
+
+}
+
+sortLeaderboard();
+displayLeaderboard(leaderboardEntries);
+updateCakeProgressFromLeaderboard();
+
+}
+
+function sortLeaderboard(){
+
+leaderboardEntries.sort(
+(a,b)=>
+Number(b.score||0)-
+Number(a.score||0)
+);
+
+}
+
+function animateCake(){
+
+const cake=
+document.getElementById("cakeFill");
+
+cake.getAnimations().forEach(
+animation=>animation.cancel()
+);
+
+cake.classList.remove("animate");
+
+void cake.offsetWidth;
+
+cake.classList.add("animate");
+
+}
+
+function resetSaveButton(){
+
+const button=
+document.getElementById("saveButton");
+
+button.textContent="💾 SKORU KAYDET";
+button.classList.remove("saved");
+
+}
+
+function setSavedButton(){
+
+const button=
+document.getElementById("saveButton");
+
+button.textContent="✓ SKOR KAYDEDİLDİ";
+button.classList.add("saved");
+
+}
+
+function manualSave(){
+
+saveScore(null,false);
+
+}
+
+async function saveScore(
+successMessage=null,
+automatic=false
+){
+
+if(!playerName)return;
+
+if(score===lastSavedScore){
+
+if(!automatic){
+setSavedButton();
+}
+
+return;
+
+}
+
+if(!automatic){
+
+const button=
+document.getElementById("saveButton");
+
+button.textContent="⏳ KAYDEDİLİYOR...";
+
+}
+
+const body={
+leaderboardId:LEADERBOARD_ID,
+playerId:playerName,
+playerDisplayName:playerName,
+score:score,
+metadata:""
+};
+
+try{
+
+const response=
+await fetch(
+API_URL+"/api/entries",
+{
+method:"POST",
+headers:{
+"x-api-key":API_KEY,
+"Content-Type":"application/json"
+},
+body:JSON.stringify(body)
+}
+);
+
+if(!response.ok){
+
+throw new Error(
+"HTTP "+response.status
+);
+
+}
+
+lastSavedScore=score;
+
+setSavedButton();
+
+let player=
+leaderboardEntries.find(
+entry=>
+entry.playerId===playerName||
+entry.playerDisplayName===playerName
+);
+
+if(player){
+
+player.score=score;
+
+}else{
+
+leaderboardEntries.push({
+playerId:playerName,
+playerDisplayName:playerName,
+score:score
+});
+
+}
+
+sortLeaderboard();
+displayLeaderboard(leaderboardEntries);
+updateCakeProgressFromLeaderboard();
+
+}catch(error){
+
+console.error(
+"Skor kaydedilemedi:",
+error
+);
+
+if(!automatic){
+
+const button=
+document.getElementById("saveButton");
+
+button.textContent="💾 SKORU KAYDET";
+button.classList.remove("saved");
+
+}
+
+}
+
+}
+
+async function getLeaderboard(){
+
+try{
+
+const response=
+await fetch(
+API_URL+
+"/api/leaderboards/"+
+encodeURIComponent(LEADERBOARD_ID)+
+"/entries",
+{
+headers:{
+"x-api-key":API_KEY
+}
+}
+);
+
+if(!response.ok){
+
+throw new Error(
+"HTTP "+response.status
+);
+
+}
+
+return await response.json();
+
+}catch(error){
+
+console.error(
+"Skorlar alınamadı:",
+error
+);
+
+return [];
+
+}
+
+}
+
+function displayLeaderboard(entries){
+
+const table=
+document.getElementById("leaderboard");
+
+table.innerHTML="";
+
+const sortedEntries=[...entries].sort(
+(a,b)=>
+Number(b.score||0)-
+Number(a.score||0)
+);
+
+const top10=
+sortedEntries.slice(0,10);
+
+if(top10.length===0){
+
+table.innerHTML=`
+<tr>
+<td colspan="3">Henüz skor yok.</td>
+</tr>
+`;
+
+return;
+
+}
+
+top10.forEach(
+(entry,index)=>{
+
+const row=
+document.createElement("tr");
+
+let rankClass="";
+let rankSymbol=index+1;
+
+if(index===0){
+
+rankClass="gold";
+rankSymbol="🥇";
+
+}else if(index===1){
+
+rankClass="silver";
+rankSymbol="🥈";
+
+}else if(index===2){
+
+rankClass="bronze";
+rankSymbol="🥉";
+
+}
+
+row.innerHTML=`
+<td class="${rankClass}">
+${rankSymbol}
+</td>
+<td>
+${escapeHTML(
+entry.playerDisplayName||""
+)}
+</td>
+<td>
+${Number(entry.score||0).toLocaleString("tr-TR")}
+</td>
+`;
+
+table.appendChild(row);
+
+}
+);
+
+}
+
+function updateScore(){
+
+document.getElementById(
+"score"
+).textContent=
+score.toLocaleString("tr-TR");
+
+}
+
+function updateCakeProgressFromLeaderboard(){
+
+totalClicks=
+leaderboardEntries.reduce(
+(total,entry)=>
+total+Number(entry.score||0),
+0
+);
+
+updateCakeDisplay();
+
+document.getElementById(
+"globalTotalClicks"
+).textContent=
+totalClicks.toLocaleString("tr-TR");
+
+}
+
+function updateCakeDisplay(){
+
+const progress=
+Math.min(
+totalClicks/CAKE_GOAL,
+1
+);
+
+const degrees=
+progress*360;
+
+document.getElementById(
+"totalClicks"
+).textContent=
+totalClicks.toLocaleString("tr-TR")+
+" / "+
+CAKE_GOAL.toLocaleString("tr-TR");
+
+const cakeProgress=
+document.getElementById(
+"cakeProgress"
+);
+
+cakeProgress.style.background=
+`conic-gradient(
+#ffc107 0deg,
+#ffc107 ${degrees}deg,
+#263750 ${degrees}deg,
+#263750 360deg
+)`;
+
+const readyText=
+document.getElementById(
+"readyText"
+);
+
+if(totalClicks>=CAKE_GOAL){
+
+cakeProgress.classList.add("ready");
+readyText.classList.add("show");
+
+if(!cakeCompleted){
+
+cakeCompleted=true;
+
+celebrate();
+
+setTimeout(
+()=>{
+celebrate();
+},
+700
+);
+
+}
+
+}else{
+
+cakeProgress.classList.remove("ready");
+readyText.classList.remove("show");
+
+}
+
+}
+
+function escapeHTML(text){
+
+const div=
+document.createElement("div");
+
+div.textContent=text;
+
+return div.innerHTML;
+
+}
+
+function celebrate(){
+
+const colors=[
+"#2196f3",
+"#42a5f5",
+"#ffc107",
+"#ffca28",
+"#ffffff",
+"#ff9800",
+"#e91e63",
+"#4caf50"
+];
+
+for(let i=0;i<55;i++){
+
+const confetti=
+document.createElement("div");
+
+confetti.className="confetti";
+
+confetti.style.left=
+Math.random()*100+"vw";
+
+confetti.style.background=
+colors[
+Math.floor(
+Math.random()*colors.length
+)
+];
+
+confetti.style.animationDuration=
+(1.5+Math.random()*2)+"s";
+
+document.body.appendChild(
+confetti
+);
+
+setTimeout(
+()=>{
+confetti.remove();
+},
+4000
+);
+
+}
+
+}
+
+async function loadInitialLeaderboard(){
+
+const entries=
+await getLeaderboard();
+
+leaderboardEntries=
+entries.map(entry=>({
+...entry,
+score:Number(entry.score||0)
+}));
+
+sortLeaderboard();
+updateCakeProgressFromLeaderboard();
+displayLeaderboard(leaderboardEntries);
+
+}
+
+loadInitialLeaderboard();
+</script>
+
+</body>
+</html>
